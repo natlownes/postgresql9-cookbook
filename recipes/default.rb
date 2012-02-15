@@ -18,3 +18,7 @@
 #
 require_recipe 'postgresql9::apt_repositories'
 require_recipe 'postgresql9::server'
+
+service 'postgresql' do
+  action :nothing
+end
