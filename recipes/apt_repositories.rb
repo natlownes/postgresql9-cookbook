@@ -9,7 +9,13 @@ if (node[:platform] == 'ubuntu') && (node[:lsb][:release].to_f < 11.04)
     notifies :run, resources(:execute => "apt-get update"), :immediately
   end
 
-  packages = %(postgresql-9.0 libpq-dev libxml2 libxml2-dev libxml2-utils libxslt1.1 libxslt1-dev)
+  packages = %(postgresql-9.0 postgresql-client-9.0 postgresql-contrib-9.0 libpq-dev libxml2 libxml2-dev libxml2-utils libxslt1.1 libxslt1-dev)
+
+  packages.each do |pkg|
+    package pkg do
+      action :install
+    end
+  end
 end
 
 if node[:platform] == 'debian'
@@ -44,8 +50,8 @@ if node[:platform] == 'debian'
   end
 end
 
-if node[:platform] == 'ubuntu' && (node[:lsb][:release].to_f > 11.04)
-  packages = %(postgresql libpq-dev)
+if node[:platform] == 'ubuntu' && (node[:lsb][:release].to_f >= 11.04)
+  packages = %(postgresql postgresql-client postgresql-common postgresql-contrib libpq-dev)
 
   packages.each do |pkg|
     package pkg do
