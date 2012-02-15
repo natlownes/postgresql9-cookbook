@@ -7,6 +7,12 @@ execute "create database user #{node[:postgresql9][:db_user]}" do
 end
 
 execute "set database user #{node[:postgresql9][:db_user]} password" do
-  command %{psql -d postgres -c "ALTER USER #{node[:postgresql9][:db_user]} with password '#{node[:postgresql9][:password]}a;' "}
+  command %{psql -d postgres -c "ALTER USER #{node[:postgresql9][:db_user]} with password '#{node[:postgresql9][:password]}'; "}
   user "postgres"
+end
+
+template "/etc/postgresql/9.0/main/pg_hba.conf" do
+  source "pg_hba.conf"
+  user   "postgres"
+  notifies :restart,     resources(:service => "postgresql"), :immediately
 end
