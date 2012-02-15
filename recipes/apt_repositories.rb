@@ -1,6 +1,6 @@
 require_recipe 'apt'
 
-if platform[:ubuntu] && (node[:lsb][:release].to_f < 11.04)
+if (node[:platform] == 'ubuntu') && (node[:lsb][:release].to_f < 11.04)
   apt_repository 'ppa-pitti-postgresql' do
     uri 'http://ppa.launchpad.net/pitti/postgresql/ubuntu'
     distribution node['lsb']['codename']
@@ -12,7 +12,7 @@ if platform[:ubuntu] && (node[:lsb][:release].to_f < 11.04)
   packages = %(postgresql-9.0 libpq-dev libxml2 libxml2-dev libxml2-utils libxslt1.1 libxslt1-dev)
 end
 
-if platform[:debian]
+if node[:platform] == 'debian'
   apt_repository 'lenny-backports' do
     uri 'http://backports.debian.org/debian-backports'
     distribution 'lenny-backports'
@@ -44,7 +44,7 @@ if platform[:debian]
   end
 end
 
-if platform[:ubuntu] && (node[:lsb][:release].to_f > 11.04)
+if node[:platform] == 'ubuntu' && (node[:lsb][:release].to_f > 11.04)
   packages = %(postgresql libpq-dev)
 
   packages.each do |pkg|
