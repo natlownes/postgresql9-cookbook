@@ -13,6 +13,7 @@ if (node[:platform] == 'ubuntu') && (node[:lsb][:release].to_f < 11.04)
 
   packages.each do |pkg|
     package pkg do
+      options "--force-yes"
       action :install
     end
   end
@@ -38,13 +39,13 @@ if node[:platform] == 'debian'
   packages = %w(postgresql-9.0 postgresql-client-9.0 postgresql-contrib-9.0)
 
   package "postgresql-common" do
-    options "-t lenny-backports"
+    options "--force-yes -t lenny-backports"
     action :install
   end
 
   packages.each do |pkg|
     package pkg do
-      options "-t lenny-backports-sloppy"
+      options "--force-yes -t lenny-backports-sloppy"
       action :install
     end
   end
