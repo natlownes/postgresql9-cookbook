@@ -12,7 +12,7 @@ execute "set database user #{node[:postgresql9][:db_user]} password" do
 end
 
 template "/etc/postgresql/9.0/main/pg_hba.conf" do
-  source "pg_hba.conf"
+  source "pg_hba.conf.erb"
 end
 
 execute "ensure postgres ownership of config files" do
