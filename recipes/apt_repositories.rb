@@ -9,7 +9,7 @@ if (node[:platform] == 'ubuntu') && (node[:lsb][:release].to_f < 11.04)
     notifies :run, resources(:execute => "apt-get update"), :immediately
   end
 
-  packages = %(postgresql-9.0 postgresql-client-9.0 postgresql-contrib-9.0 libpq-dev libxml2 libxml2-dev libxml2-utils libxslt1.1 libxslt1-dev)
+  packages = %w(postgresql-9.0 postgresql-client-9.0 postgresql-contrib-9.0 libpq-dev libxml2 libxml2-dev libxml2-utils libxslt1.1 libxslt1-dev)
 
   packages.each do |pkg|
     package pkg do
@@ -35,7 +35,7 @@ if node[:platform] == 'debian'
     notifies :run, resources(:execute => "apt-get update"), :immediately
   end
 
-  packages = %(postgresql-9.0 postgresql-client-9.0 postgresql-contrib-9.0)
+  packages = %w(postgresql-9.0 postgresql-client-9.0 postgresql-contrib-9.0)
 
   package "postgresql-common" do
     options "-t lenny-backports"
@@ -51,7 +51,7 @@ if node[:platform] == 'debian'
 end
 
 if node[:platform] == 'ubuntu' && (node[:lsb][:release].to_f >= 11.04)
-  packages = %(postgresql postgresql-client postgresql-common postgresql-contrib libpq-dev)
+  packages = %w(postgresql postgresql-client postgresql-common postgresql-contrib libpq-dev)
 
   packages.each do |pkg|
     package pkg do
