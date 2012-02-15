@@ -13,6 +13,9 @@ end
 
 template "/etc/postgresql/9.0/main/pg_hba.conf" do
   source "pg_hba.conf"
-  user   "postgres"
+end
+
+execute "ensure postgres ownership of config files" do
+  command "chown -R postgres /etc/postgresql"
   notifies :restart,     resources(:service => "postgresql"), :immediately
 end
