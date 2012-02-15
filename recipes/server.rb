@@ -7,7 +7,7 @@ execute "create database user #{node[:postgresql9][:db_user]}" do
 end
 
 execute "set database user #{node[:postgresql9][:db_user]} password" do
-  command %{psql -d postgres -c "ALTER USER #{node[:postgresql9][:db_user]} with password '#{node[:postgresql9][:password]}'; "}
+  command %{psql -d postgres -c "ALTER USER #{node[:postgresql9][:db_user]} with encrypted password '#{node[:postgresql9][:password]}'; "}
   user "postgres"
 end
 
