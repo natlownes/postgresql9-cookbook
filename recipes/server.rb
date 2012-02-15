@@ -1,6 +1,7 @@
+require_recipe 'postgresql9::server_install'
 
 execute "create database user #{node[:postgresql9][:db_user]}" do
-  command "createuser -d #{node[:postgresql9][:db_user]}"
+  command "createuser -dSR #{node[:postgresql9][:db_user]}"
   user "postgres"
 end
 
