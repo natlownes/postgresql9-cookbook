@@ -29,19 +29,27 @@ end
 
 db_path = "#{node[:postgresql9][:db_path]}/data"
 
+execute "change-db-ownership-to-postgres" do
+  command "chown -R postgres #{db_path}"
+  action :nothing
+
+  notifies :restart, resources(:service => "postgresql"), :immediately
+end
+                                                                                                                  
+execute "init-postgres" do                                                                                        
+  command "initdb -D #{db_path} --encoding=UTF8 --locale=en_US.UTF-8"
+  action :nothing                                                                                                   
+  user 'postgres'                                                                                               
+  only_if "[ ! -d #{db_path}]"                                      
+
+  notifies :run, resources(:execute => "change-db-ownership-to-postgres"), :immediately
+end                                                                                                               
+
 directory node[:postgresql9][:db_path] do
   action :create
   recursive true
+  owner 'postgres'
+  group 'postgres'
+  notifies :run, resources(:execute => "init-postgres"), :immediately
 end
 
-execute "init-postgres" do                                                                                        
-  command "initdb -D #{db_path} --encoding=UTF8 --locale=en_US.UTF-8"
-  action :run                                                                                                   
-  user 'postgres'                                                                                               
-  only_if "[ ! -d #{db_path}]"                                      
-end                                                                                                               
-                                                                                                                  
-execute "change db ownership to postgres" do
-  command "chown -R postgres #{db_path}"
-  notifies :restart, resources(:service => "postgresql"), :immediately
-end
