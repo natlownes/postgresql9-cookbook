@@ -8,7 +8,7 @@ execute "create database user #{node[:postgresql9][:db_user]}" do
 end
 
 
-md5_password = ::Digest::MD5.hexdigest(node[:postgresql9][:password]
+md5_password = ::Digest::MD5.hexdigest(node[:postgresql9][:password])
 execute "set database user #{node[:postgresql9][:db_user]} password" do
   command %{psql -d postgres -c "ALTER USER #{node[:postgresql9][:db_user]} ENCRYPTED PASSWORD '#{md5_password}'; "}
   user "postgres"
