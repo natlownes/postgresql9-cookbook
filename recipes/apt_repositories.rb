@@ -29,4 +29,5 @@ if node[:platform] == 'debian'
 end
 
 if node[:platform] == 'ubuntu' && (node[:lsb][:release].to_f >= 11.04)
+  # don't worry about it, postgres here is 9
 end
