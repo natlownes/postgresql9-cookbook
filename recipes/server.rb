@@ -15,19 +15,19 @@ execute "halt-postgres" do
   only_if "[ ! -d #{db_path}]"                                      
 end
 
+execute "set-database-user-password" do
+  command %{psql -d postgres -c "ALTER USER #{node[:postgresql9][:db_user]} ENCRYPTED PASSWORD '#{md5_password}'; "}
+  user "postgres"
+
+  action :nothing
+end
+
 execute "create-database-user" do
   command "createuser -dSR #{node[:postgresql9][:db_user]}"
   user "postgres"
   not_if %{ su postgres -c "psql -c 'SELECT * from pg_roles' |grep -q #{node[:postgresql9][:db_user]}" } 
 
   notifies :run, resources(:execute => 'set-database-user-password'), :immediately
-end
-
-execute "set-database-user-password" do
-  command %{psql -d postgres -c "ALTER USER #{node[:postgresql9][:db_user]} ENCRYPTED PASSWORD '#{md5_password}'; "}
-  user "postgres"
-
-  action :nothing
 end
 
 execute "change-db-ownership-to-postgres" do
