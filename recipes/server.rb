@@ -1,14 +1,15 @@
 require 'digest/md5'
 require_recipe 'postgresql9::server_install'
 
+db_path = "#{node[:postgresql9][:db_path]}/data"
+md5_password = ::Digest::MD5.hexdigest(node[:postgresql9][:password])
+
 execute "create database user #{node[:postgresql9][:db_user]}" do
   command "createuser -dSR #{node[:postgresql9][:db_user]}"
   user "postgres"
   not_if %{ su postgres -c "psql -c 'SELECT * from pg_roles' |grep -q #{node[:postgresql9][:db_user]}" } 
 end
 
-
-md5_password = ::Digest::MD5.hexdigest(node[:postgresql9][:password])
 execute "set database user #{node[:postgresql9][:db_user]} password" do
   command %{psql -d postgres -c "ALTER USER #{node[:postgresql9][:db_user]} ENCRYPTED PASSWORD '#{md5_password}'; "}
   user "postgres"
@@ -20,6 +21,9 @@ end
 
 template "/etc/postgresql/9.0/main/postgresql.conf" do
   source "postgresql.conf.erb"
+  variables(
+    :db_path => db_path
+  )
 end
 
 execute "ensure postgres ownership of config files" do
@@ -27,7 +31,6 @@ execute "ensure postgres ownership of config files" do
   notifies :restart,     resources(:service => "postgresql"), :immediately
 end
 
-db_path = "#{node[:postgresql9][:db_path]}/data"
 
 execute "change-db-ownership-to-postgres" do
   command "chown -R postgres #{db_path}"
