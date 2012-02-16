@@ -26,3 +26,22 @@ execute "ensure postgres ownership of config files" do
   command "chown -R postgres /etc/postgresql"
   notifies :restart,     resources(:service => "postgresql"), :immediately
 end
+
+db_path = "#{node[:postgresql9][:db_path]}/data"
+
+directory node[:postgresql9][:db_path] do
+  action :create
+  recursive true
+end
+
+execute "init-postgres" do                                                                                        
+  command "initdb -D #{db_path} --encoding=UTF8 --locale=en_US.UTF-8"
+  action :run                                                                                                   
+  user 'postgres'                                                                                               
+  only_if "[ ! -d #{db_path}]"                                      
+end                                                                                                               
+                                                                                                                  
+execute "change db ownership to postgres" do
+  command "chown -R postgres #{db_path}"
+  notifies :restart, resources(:service => "postgresql"), :immediately
+end
