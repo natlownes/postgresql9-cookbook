@@ -12,7 +12,7 @@ execute "halt-postgres" do
   # stop postgres if we've installed/started it
   # since we'll be changing the data directory 
   # if it doesn't exist
-  only_if "[ ! -d #{db_path}]"                                      
+  only_if { !File.directory?(db_path) }
 end
 
 execute "set-database-user-password" do
@@ -43,7 +43,7 @@ execute "init-postgres" do
   command "initdb -D #{db_path} --encoding=UTF8 --locale=en_US.UTF-8"
   action :nothing                                                                                                   
   user 'postgres'                                                                                               
-  only_if "[ ! -d #{db_path}]"                                      
+  only_if { !File.directory?(db_path) }
 
   notifies :run, resources(:execute => "change-db-ownership-to-postgres"), :immediately
 end                                                                                                               
