@@ -7,6 +7,10 @@ db_path = "#{node[:postgresql9][:db_path]}/data"
 
 md5_password = ::Digest::MD5.hexdigest(node[:postgresql9][:password])
 
+service 'postgresql' do
+  action :stop
+end
+
 template "/etc/postgresql/9.0/main/pg_hba.conf" do
   source "pg_hba.conf.erb"
 end
