@@ -52,7 +52,6 @@ execute "change-db-ownership-to-postgres" do
   command "chown -R postgres #{db_path}"
   action :nothing
 
-  notifies :run, resources(:execute => 'create-database-user'), :delayed
   notifies :restart, resources(:service => "postgresql"), :delayed
 end
                                                                                                                   
@@ -75,6 +74,8 @@ end
 
 execute "ensure postgres ownership of config files" do
   command "chown -R postgres /etc/postgresql"
-  notifies :restart,     resources(:service => "postgresql")
+
+  notifies :restart,     resources(:service => "postgresql"), :immediately
+  notifies :run, resources(:execute => 'create-database-user')
 end
 
