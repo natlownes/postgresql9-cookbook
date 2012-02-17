@@ -2,7 +2,7 @@ require 'digest/md5'
 require_recipe 'postgresql9::server_install'
 
 postgres_version = "9.0"
-binaries_path = "/usr/lib/postgresql/#{postgres_version}/bin/"
+binaries_path = "/usr/lib/postgresql/#{postgres_version}/bin"
 db_path = "#{node[:postgresql9][:db_path]}/data"
 
 md5_password = ::Digest::MD5.hexdigest(node[:postgresql9][:password])
@@ -12,7 +12,8 @@ execute "halt-postgres" do
   # stop postgres if we've installed/started it
   # since we'll be changing the data directory 
   # if it doesn't exist
-  only_if { !File.directory?(db_path) }
+  action :run
+  only_if { !File.directory?(db_path) && File.file?('/etc/init.d/postgresql') }
 end
 
 execute "set-database-user-password" do
@@ -36,11 +37,11 @@ execute "change-db-ownership-to-postgres" do
 
   notifies :restart, resources(:service => "postgresql"), :immediately
 
-  notifies :run, resources(:execute => 'create-database-user'), :immediately
+  notifies :run, resources(:execute => 'create-database-user'), :delayed
 end
                                                                                                                   
 execute "init-postgres" do                                                                                        
-  command "initdb -D #{db_path} --encoding=UTF8 --locale=en_US.UTF-8"
+  command "#{binaries_path}/initdb -D #{db_path} --encoding=UTF8 --locale=en_US.UTF-8"
   action :nothing                                                                                                   
   user 'postgres'                                                                                               
   only_if { !File.directory?(db_path) }
