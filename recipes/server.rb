@@ -7,7 +7,9 @@ db_path = "#{node[:postgresql9][:db_path]}/data"
 max_connections =  node[:postgresql9][:settings][:max_connections]
 total_memory_in_kb = node[:memory][:total].gsub(/\D/,'').to_i
 
-shared_buffers_in_kb = (total_memory_in_kb / max_connections)
+# I make no guarantee this makes any sense.  just trying to get it 
+# to work on a tiny machine
+shared_buffers_in_kb = (total_memory_in_kb / (max_connections * 32))
 
 md5_password = ::Digest::MD5.hexdigest(node[:postgresql9][:password])
 
