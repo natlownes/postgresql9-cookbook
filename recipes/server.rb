@@ -9,21 +9,23 @@ total_memory_in_kb = node[:memory][:total].gsub(/\D/,'').to_i
 
 # I make no guarantee this makes any sense.  just trying to get it 
 # to work on a tiny machine
-shared_buffers_in_kb = (total_memory_in_kb / (max_connections * 32))
+#shared_buffers_in_kb = (total_memory_in_kb / (max_connections * 32))
+
+shared_buffers = ['28', 'MB']
 
 md5_password = ::Digest::MD5.hexdigest(node[:postgresql9][:password])
 
-execute "remove kernel.shmmax from sysctl" do
-  command "grep -v kernel.shmmax /etc/sysctl.conf >> /tmp/sysctl.conf"
-  only_if { "grep kernel.shmmax=#{total_memory_in_kb} /etc/sysctl.conf" } 
-end
+#execute "remove kernel.shmmax from sysctl" do
+  #command "grep -v kernel.shmmax /etc/sysctl.conf >> /tmp/sysctl.conf"
+  #only_if { "grep kernel.shmmax=#{total_memory_in_kb} /etc/sysctl.conf" } 
+#end
 
-execute "update-sysctl.conf" do
-  command "echo kernel.shmmax=#{total_memory_in_kb} >> /tmp/sysctl.conf && cp /tmp/sysctl.conf /etc/sysctl.conf && sysctl -p && rm /tmp/sysctl.conf"
-  action :nothing
+#execute "update-sysctl.conf" do
+  #command "echo kernel.shmmax=#{total_memory_in_kb} >> /tmp/sysctl.conf && cp /tmp/sysctl.conf /etc/sysctl.conf && sysctl -p && rm /tmp/sysctl.conf"
+  #action :nothing
 
-  subscribes :run, resources(:execute => 'remove kernel.shmmax from sysctl'), :immediately
-end
+  #subscribes :run, resources(:execute => 'remove kernel.shmmax from sysctl'), :immediately
+#end
 
 service 'postgresql' do
   action :stop
@@ -37,7 +39,7 @@ template "/etc/postgresql/9.0/main/postgresql.conf" do
   source "postgresql.conf.erb"
   variables(
     :db_path => db_path,
-    :shared_buffers => shared_buffers_in_kb,
+    :shared_buffers => shared_buffers.join(''),
     :max_connections => max_connections
   )
 end
