@@ -28,6 +28,8 @@ execute "create-database-user" do
   user "postgres"
   not_if %{ su postgres -c "psql -c 'SELECT * from pg_roles' |grep -q #{node[:postgresql9][:db_user]}" } 
 
+  action :nothing
+
   notifies :run, resources(:execute => 'set-database-user-password'), :immediately
 end
 
