@@ -4,8 +4,24 @@ require_recipe 'postgresql9::server_install'
 postgres_version = "9.0"
 binaries_path = "/usr/lib/postgresql/#{postgres_version}/bin"
 db_path = "#{node[:postgresql9][:db_path]}/data"
+max_connections =  node[:postgresql9][:settings][:max_connections]
+total_memory_in_kb = node[:memory][:total].gsub(/\D/,'')
+
+shared_buffers_in_kb = (total_memory_in_kb / max_connections)
 
 md5_password = ::Digest::MD5.hexdigest(node[:postgresql9][:password])
+
+execute "remove kernel.shmmax from sysctl" do
+  command "grep -v kernel.shmmax /etc/sysctl.conf >> /tmp/sysctl.conf"
+  only_if { "grep kernel.shmmax=#{total_memory_in_kb} /etc/sysctl.conf" } 
+end
+
+execute "update-sysctl.conf" do
+  command "echo kernel.shmmax=#{total_memory_in_kb} >> /tmp/sysctl.conf && cp /tmp/sysctl.conf /etc/sysctl.conf && sysctl -p && rm /tmp/sysctl.conf"
+  action :nothing
+
+  subscribes :run, resources(:execute => 'remove kernel.shmmax from sysctl'), :immediately
+end
 
 service 'postgresql' do
   action :stop
@@ -18,7 +34,9 @@ end
 template "/etc/postgresql/9.0/main/postgresql.conf" do
   source "postgresql.conf.erb"
   variables(
-    :db_path => db_path
+    :db_path => db_path,
+    :shared_buffers => shared_buffers_in_kb,
+    :max_connections => max_connections
   )
 end
 
