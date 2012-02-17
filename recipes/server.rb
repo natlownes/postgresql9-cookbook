@@ -5,7 +5,7 @@ postgres_version = "9.0"
 binaries_path = "/usr/lib/postgresql/#{postgres_version}/bin"
 db_path = "#{node[:postgresql9][:db_path]}/data"
 max_connections =  node[:postgresql9][:settings][:max_connections]
-total_memory_in_kb = node[:memory][:total].gsub(/\D/,'')
+total_memory_in_kb = node[:memory][:total].gsub(/\D/,'').to_i
 
 shared_buffers_in_kb = (total_memory_in_kb / max_connections)
 
