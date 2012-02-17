@@ -28,7 +28,7 @@ execute "halt-postgres-for-db-path-switch" do
   # since we'll be changing the data directory 
   # if it doesn't exist
   action :run
-  only_if { (`pgrep postgres`.length == 0) && !File.directory?(db_path) }
+  only_if { (`pgrep postgres`.length != 0) && !File.directory?(db_path) }
 end
 
 execute "set-database-user-password" do
