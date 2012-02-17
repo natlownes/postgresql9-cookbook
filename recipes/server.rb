@@ -8,12 +8,12 @@ db_path = "#{node[:postgresql9][:db_path]}/data"
 md5_password = ::Digest::MD5.hexdigest(node[:postgresql9][:password])
 
 execute "halt-postgres" do
-  command "/etc/init.d/postgresql stop"
+  command "killall postgres"
   # stop postgres if we've installed/started it
   # since we'll be changing the data directory 
   # if it doesn't exist
   action :run
-  only_if { !File.directory?(db_path) && File.file?('/etc/init.d/postgresql') }
+  only_if { (`pgrep postgres`.length == 0) && !File.directory?(db_path) }
 end
 
 execute "set-database-user-password" do
