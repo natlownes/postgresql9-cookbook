@@ -7,7 +7,18 @@ db_path = "#{node[:postgresql9][:db_path]}/data"
 
 md5_password = ::Digest::MD5.hexdigest(node[:postgresql9][:password])
 
-execute "halt-postgres" do
+template "/etc/postgresql/9.0/main/pg_hba.conf" do
+  source "pg_hba.conf.erb"
+end
+
+template "/etc/postgresql/9.0/main/postgresql.conf" do
+  source "postgresql.conf.erb"
+  variables(
+    :db_path => db_path
+  )
+end
+
+execute "halt-postgres-for-db-path-switch" do
   command "killall postgres"
   # stop postgres if we've installed/started it
   # since we'll be changing the data directory 
@@ -37,9 +48,8 @@ execute "change-db-ownership-to-postgres" do
   command "chown -R postgres #{db_path}"
   action :nothing
 
-  notifies :restart, resources(:service => "postgresql"), :immediately
-
   notifies :run, resources(:execute => 'create-database-user'), :delayed
+  notifies :restart, resources(:service => "postgresql"), :delayed
 end
                                                                                                                   
 execute "init-postgres" do                                                                                        
@@ -59,19 +69,8 @@ directory node[:postgresql9][:db_path] do
   notifies :run, resources(:execute => "init-postgres"), :immediately
 end
 
-template "/etc/postgresql/9.0/main/pg_hba.conf" do
-  source "pg_hba.conf.erb"
-end
-
-template "/etc/postgresql/9.0/main/postgresql.conf" do
-  source "postgresql.conf.erb"
-  variables(
-    :db_path => db_path
-  )
-end
-
 execute "ensure postgres ownership of config files" do
   command "chown -R postgres /etc/postgresql"
-  notifies :restart,     resources(:service => "postgresql"), :immediately
+  notifies :restart,     resources(:service => "postgresql")
 end
 
